@@ -1,10 +1,9 @@
-# EctoCursorBasedStream
+# Cursornator
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/allegro/ecto-cursor-based-stream/test.yml) [![Hex.pm](https://img.shields.io/hexpm/v/ecto_cursor_based_stream.svg)](https://hex.pm/packages/ecto_cursor_based_stream) [![Documentation](https://img.shields.io/badge/documentation-gray)](https://hexdocs.pm/ecto_cursor_based_stream/)
+
+> **Notes**: This repo is my customized version of [Ecto Cursor based stream](https://github.com/allegro/ecto-cursor-based-stream) for using in my projects.
 
 Cursor-based streaming of Ecto records, that does not require database transaction.
-
-Gives you a [`cursor_based_stream/2`](https://hexdocs.pm/ecto_cursor_based_stream/EctoCursorBasedStream.html#c:cursor_based_stream/2) function that mimics [`Ecto.Repo.stream/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:stream/2) interface.
 
 Advantages in comparison to the standard `Ecto.Repo.stream/2`:
 
@@ -18,47 +17,36 @@ Only limitation is that you have to supply a _cursor column or columns_ (by pass
 
 ## Usage
 
-1. Add `ecto_cursor_based_stream` to your list of dependencies in `mix.exs`:
+1. Add `cursornator` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:ecto_cursor_based_stream, "~> 1.2.0"}
+    {:cursornator, "~> 1.3.0"}
   ]
 end
 ```
 
-2. Add `use EctoCursorBasedStream` to the module that uses `Ecto.Repo`:
+2. Add `use Cursornator` to the module that uses `Ecto.Repo`:
 
 ```elixir
 defmodule MyRepo do
   use Ecto.Repo
-  use EctoCursorBasedStream
+  use Cursornator
 end
 ```
 
-3. Stream the rows using `cursor_based_stream/2`:
+3. Stream the rows using `cursor_stream/2`:
 
 ```elixir
 Post
-|> MyRepo.cursor_based_stream()
+|> MyRepo.cursor_stream(max_rows: 100)
 |> Stream.each(...)
 |> Stream.run()
 ```
 
-## Useful links
+4. Query if you don't want to stream
 
-- [Documentation](https://hexdocs.pm/ecto_cursor_based_stream/EctoCursorBasedStream.html)
-- [Examples](https://github.com/allegro/ecto-cursor-based-stream/blob/main/test/ecto_cursor_based_stream_test.exs)
-
-## Contributing
-
-### Running tests
-
-Run the following after cloning the repo:
-
-```sh
-mix deps.get
-docker-compose up -d
-mix test
+```elixir
+{posts, next_cursor} = MyRepo.cursor_query(Post, cursor_field: [published_at: :desc, id: :desc])
 ```
